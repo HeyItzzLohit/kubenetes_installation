@@ -1,0 +1,144 @@
+(BASIC INSTALLATION)
+
+1-- BASIC INFRASTRUCTURE AWS
+    1 - t2.medium instance atlest 2 CPU's 
+    2 - Add following in inbound ports in security groups 
+            6443-       Kubernetes API server
+            2379-2380   etcd server client API
+            10250       Kubelet API
+            10251       kube-scheduler
+            10252       kube-controller-manager
+   
+-------------------------------------------------------------
+
+2--DOCKER INSTALLATION
+
+  #  sudo su
+  #  yum install docker -y 
+  #  systemctl enable docker && systemctl start docker
+----------------------------------------------------------------
+
+3--PACKAGE INSTALLATION(FOR 86X64 ARCH) 
+----------------------------------------
+nano /etc/yum.repos.d/kubernetes.repo
+----------------------------------------
+  [kubernetes]
+ 
+  name=Kubernetes
+
+  baseurl=https://packages.cloud.google.com/yum/repos/kubernetes-el7-x86_64
+
+  enabled=1
+
+  gpgcheck=1
+
+  repo_gpgcheck=0
+
+  gpgkey=https://packages.cloud.google.com/yum/doc/yum-key.gpg https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg
+
+  exclude=kube*
+---------------------------------------------------------------------------------------
+(EITHER USE FOR BASE ARCH. ACCORDING TO THE REQUIREMENTS)
+
+  nano /etc/yum.repos.d/kubernetes.repo
+      [kubernetes]
+      name=Kubernetes
+      baseurl=https://packages.cloud.google.com/yum/repos/kubernetes-el7-\$basearch
+      enabled=1
+      gpgcheck=1
+      gpgkey=https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg
+------------------------------------------------
+
+4--BRIDGE COMMAND
+------------------------------------------------
+nano /etc/sysctl.d/k8s.conf
+------------------------------------------------
+net.bridge.bridge-nf-call-ip6tables = 1
+net.bridge.bridge-nf-call-iptables = 1
+EOF
+
+sysctl --system
+setenforce 0
+
+--------------------------------------------------------
+5--KUBERNETES INSTALLATION
+  #  yum install -y kubelet kubeadm kubectl --disableexcludes=kubernetes
+  #  systemctl enable kubelet && systemctl start kubelet
+
+---------- to make instance as a MASTER----------------- 
+6-- 
+  #  kubeadm init --ignore-preflight-errors=all
+           
+     copy this command ......kubeadm join 172.31.32.75:6443 --token v6puvg.o7os499jqofdcked \
+        --discovery-token-ca-cert-hash sha256:6fc07d081ea77c6bb42604a9c0abfbcbb12ba6691130afb94ef36ac57e3e10b9
+----------------------------------------------------------------------
+7--
+     mkdir -p $HOME/.kube
+     sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+     sudo chown $(id -u):$(id -g) $HOME/.kube/config
+
+-----------------------------------------------------------------------
+8--
+  #  kubectl apply -f https://docs.projectcalico.org/manifests/calico.yaml
+
+        (this URL not working) error 404 
+          
+        VISIT:- https://docs.tigera.io/calico/latest/getting-started/kubernetes/quickstart 
+         (here we need to install calico ) 
+          visit above site and find installation of latest calico on kubernetes 
+       
+  #  kubectl create -f https://raw.githubusercontent.com/projectcalico/calico/v3.25.1/manifests/tigera-operator.yaml
+
+  #  kubectl create -f https://raw.githubusercontent.com/projectcalico/calico/v3.25.1/manifests/custom-resources.yaml
+
+      (either use apply -f or create -f )
+------------------------------------------------------------------------------------
+9--
+
+  #  kubectl get nodes
+        (not ready 0/1)
+-------------------------------------------------------------------------------------
+10--
+  
+  #  note - now complete kube worker node installation 
+
+
+  #  service kubelet restart
+
+---------------------------------------------------------------------------------
+
+11-- 
+
+  # kubectl get nodes  (0/1) not ready
+  # kubectl get pods   (0/1) pending 
+
+-----------------------------------------------------------------------------------
+
+12-- 
+   NOTE:- go to 3 troubleshoot.txt and follow the steps 
+
+-----------------------------------------------------------------------------------
+                       
+
+
+
+
+
+
+
+
+
+
+
+
+     
+
+
+
+#-----------------
+kubeadm join 172.31.38.88:6443 --token ii7oi2.92o88kf89w4pz320 \
+        --discovery-token-ca-cert-hash sha256:f9e9b7fc1c472ba59a9acc6cad8557791e058b0f9ba3ff3cba807d26e6aed1c3
+
+
+
+

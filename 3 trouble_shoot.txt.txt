@@ -1,0 +1,77 @@
+1--
+
+ here you made cluster but nodes showing not ready 0/1
+ here you made pod too but same pending state ready 0/1
+
+---------------------------------------------------------------------------
+2--
+  
+  # kubectl describe node <node_name>
+
+      here errors like in connection block
+ 
+       1 insufficient cpu
+      *2 Network plugin returns error: cni plugin not initialized
+
+-----------------------------------------------------------------------------
+3--
+
+(you have installed calico but container network interface not enabled (CNI) )
+
+so use 
+  (https://kubernetes.io/docs/tasks/administer-cluster/migrating-from-dockershim/
+         troubleshooting-cni-plugin-related-errors/ )
+
+-----------------------------------------------------------------------------
+4--
+  # cat << EOF | tee /etc/cni/net.d/10-containerd-net.conflist
+    {
+     "cniVersion": "1.0.0",
+     "name": "containerd-net",
+     "plugins": [
+    {
+     "type": "bridge",
+     "bridge": "cni0",
+     "isGateway": true,
+     "ipMasq": true,
+     "promiscMode": true,
+     "ipam": {
+       "type": "host-local",
+       "ranges": [
+         [{
+           "subnet": "10.88.0.0/16"
+         }],
+         [{
+           "subnet": "2001:db8:4860::/64"
+         }]
+       ],
+       "routes": [
+         { "dst": "0.0.0.0/0" },
+         { "dst": "::/0" }
+       ]
+     }
+   },
+   {
+     "type": "portmap",
+     "capabilities": {"portMappings": true},
+     "externalSetMarkChain": "KUBE-MARK-MASQ"
+   }
+ ]
+}
+EOF
+
+-----------------------------------------------------------
+
+4 
+    do this on master as well as workers you attached 
+        and restart kubelet again 
+       
+    # service kubelet restart 
+
+-----------------------------------------------------------
+ now 
+     # kubectl get nodes 
+     # kubectl get pods 
+
+(YOUR CLUSTER WORKING PROPERLY) (1/1 READY)
+------------------------------------------------------------
